@@ -2,10 +2,34 @@
   height: 500px;
   width: 100%;
 }
+#overview-map svg path {
+  pointer-events: all;
+}
 .leaflet-container {
     background-color:rgba(255,255,255,0.0);
 }
 .country {
   stroke-width: 1;
+  stroke: #5B5B5B;
   fill: #A9A9A9;
+  cursor: pointer;
+  pointer-events: all;
+  stroke-linecap: round;
+}
+.country.highlight {
+  stroke-width: 2;
+  stroke: #000000;
+}
+#tooltip {
+    position:absolute;
+    z-index:999;
+    font-size:14px;
+    color: #1a1a1a;
+    background-color: rgba(245,245,245,1);
+    border-radius: 3px;
+    padding: 4px 6px;
+    max-width: 300px;
+}
+#tooltip:empty {
+    display:none;
 }
