@@ -33,3 +33,8 @@
 #tooltip:empty {
     display:none;
 }
+.bar-graph-div {
+   border:0;
+   display:inline-block;
+   height:15px;
+}
