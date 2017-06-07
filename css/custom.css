@@ -20,6 +20,9 @@
   stroke-width: 2;
   stroke: #000000;
 }
+.country.filter-active {
+  stroke: yellow;
+}
 #tooltip {
     position:absolute;
     z-index:999;
@@ -34,7 +37,10 @@
     display:none;
 }
 .bar-graph-div {
-   border:0;
+   border:1px solid black;
    display:inline-block;
    height:15px;
+}
+.filter-startYear.filter-active {
+  color: red;
 }
