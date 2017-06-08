@@ -44,27 +44,29 @@
    display:inline-block;
    height:15px;
 }
-.filter-startYear.filter-active {
-  color: red;
-}
 .clickable {
   cursor: pointer;
 }
 
-#chart_start-year  rect {
+.filter-startYear rect {
   fill: #1d91c0;
 }
-#chart_start-year  text {
+.filter-startYear text {
   font-size: 11px;
   font-family: inherit;
 }
-#chart_start-year  text.year-label {
+.filter-startYear text.year-label {
   text-anchor: end;
   fill: black;
 }
-#chart_start-year  text.year-total {
+.filter-startYear text.year-total {
   text-anchor: start;
   fill: black;
+}
+.filter-startYear.filter-active text.year-label{
+  fill: #08306b ;
+  font-weight: 900 ;
+  font-size: 14px ;
 }
 
 

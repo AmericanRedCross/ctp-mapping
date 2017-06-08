@@ -238,7 +238,18 @@ function drawElements(){
         .attr("y", startYearMeas.barHeight / 2)
         .attr("dy", ".35em")
     }).sort(function(a, b) { return b.key - a.key; })
-    .attr("transform", function(d, i) { return "translate(" + startYearMeas.left + "," + ((i * startYearMeas.barHeight) + startYearMeas.top) + ")"; });
+    .classed("filter-startYear clickable", true)
+    .attr("transform", function(d, i) { return "translate(" + startYearMeas.left + "," + ((i * startYearMeas.barHeight) + startYearMeas.top) + ")"; })
+    .attr('data-filterkey', 'startYear')
+    .attr('data-filtervalue', function(d){ return d.key; })
+    .on('click', function(d){
+      if(d3.select(this).classed('filter-active')){
+        d3.select(this).classed('filter-active', false);
+      } else {
+        d3.select(this).classed('filter-active', true);
+      }
+      filter();
+    })
 
     filter();
 }
