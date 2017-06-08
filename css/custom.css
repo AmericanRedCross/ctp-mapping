@@ -11,10 +11,13 @@
 .country {
   stroke-width: 1;
   stroke: #5B5B5B;
-  fill: #A9A9A9;
+  fill: #B3B3B3;
   cursor: pointer;
   pointer-events: all;
   stroke-linecap: round;
+}
+.country.hasAppeal {
+  fill: #828282;
 }
 .country.highlight {
   stroke-width: 2;

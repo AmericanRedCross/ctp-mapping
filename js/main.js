@@ -174,7 +174,7 @@ function updateElements(myFilters){
         if(country.values.length){
           if(country.values.length > 0){
             countryGeo.style("fill", function(d){  return regionColor(country.values[0]["#region"]) })
-            countryGeo.attr("data-count", country.values.length)
+            countryGeo.attr("data-count", country.values.length);
           }
         }
       }
@@ -198,7 +198,7 @@ function updateElements(myFilters){
   var yearUpdate = d3.select('#chart_start-year').selectAll("g").data(ctpStartYears, function(d){ return d.key; });
   yearUpdate.select("rect")
     .transition().duration(600).ease(d3.easeLinear)
-    .attr("width", function(d) { console.log(d); return startYearX(d.value); })
+    .attr("width", function(d) { return startYearX(d.value); })
   yearUpdate.select(".year-total")
     .transition().duration(600).ease(d3.easeLinear)
     .attr("x", function(d) { return startYearX(d.value) + 3; })
@@ -238,7 +238,7 @@ function drawElements(){
         .attr("y", startYearMeas.barHeight / 2)
         .attr("dy", ".35em")
     }).sort(function(a, b) { return b.key - a.key; })
-    .attr("transform", function(d, i) { console.log(i); return "translate(" + startYearMeas.left + "," + ((i * startYearMeas.barHeight) + startYearMeas.top) + ")"; });
+    .attr("transform", function(d, i) { return "translate(" + startYearMeas.left + "," + ((i * startYearMeas.barHeight) + startYearMeas.top) + ")"; });
 
     filter();
 }
@@ -263,6 +263,13 @@ function buildPage(error, appeals, geo){
     mappedCountry = geoGroup.selectAll("path")
       .data(world.features, function(d){ return d.properties.iso; })
       .enter().append("path")
+      .classed('hasAppeal', function(d){
+        var hasAppeal = false;
+        ctp.forEach(function(a,b){
+          if(a["#iso3"] === d.properties.iso){ hasAppeal = true }
+        });
+        return hasAppeal;
+      })
       .classed("country", true)
       .attr('data-filterkey', '#iso3')
       .attr('data-filtervalue', function(d){ return d.properties.iso; })
