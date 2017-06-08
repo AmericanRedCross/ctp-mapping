@@ -44,3 +44,24 @@
 .filter-startYear.filter-active {
   color: red;
 }
+.clickable {
+  cursor: pointer;
+}
+
+#chart_start-year  rect {
+  fill: #1d91c0;
+}
+#chart_start-year  text {
+  font-size: 11px;
+  font-family: inherit;
+}
+#chart_start-year  text.year-label {
+  text-anchor: end;
+  fill: black;
+}
+#chart_start-year  text.year-total {
+  text-anchor: start;
+  fill: black;
+}
+
+
