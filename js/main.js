@@ -159,11 +159,36 @@ function updateElements(myFilters){
   })
   // console.log(filteredData.length)
 
+
+// DISPLAY THE FILTER CRITERIA
+  var filterReadable = {
+    "#iso3": "Country code",
+    "startYear": "Start year",
+    "#region": "Region"
+  }
+  var theseFilters = []
+  for(var prop in myFilters){
+      var theseValues = [];
+      myFilters[prop].forEach(function(item,index){
+        theseValues.push(item);
+      });
+      var thisStr = filterReadable[prop] + " is " + theseValues.join(" or ") + ".";
+      theseFilters.push(thisStr);
+  }
+  if(theseFilters.length > 0 && filteredData.length > 0){
+    d3.select("#filter-info").html("<b>Filters:</b> " + theseFilters.join(" "));
+    d3.select("#filter-error").html("");
+  } else if (theseFilters.length > 0 && filteredData.length === 0){
+    d3.select("#filter-error").html("No appeals match your selected filter criteria.<br>" + "<b>Filters:</b> " + theseFilters.join(" "));
+    d3.select("#filter-info").html("");
+  } else {
+    d3.select("#filter-error").html("");
+    d3.select("#filter-info").html("");
+  }
+
   var countryTotals = d3.nest()
     .key(function(d) { return d["#iso3"]; })
     .entries(filteredData);
-
-  // d3.select("#count-total").text(countryTotals.filter(function(d){ return d.key !== "ERROR"; }).length);
 
   mappedCountry.each(function(d){
     var countryGeo = d3.select(this);
@@ -180,6 +205,16 @@ function updateElements(myFilters){
       }
     })
   })
+
+  var regionTotals = d3.nest().key(function(d){ return d["#region"]; })
+    .rollup(function(leaves){ return leaves.length; })
+    .entries(filteredData);
+
+  var regionClear = d3.select('#region-totals').selectAll("div").select("h2").html("0");
+
+  var regionUpdate = d3.select('#region-totals').selectAll("div").data(regionTotals, function(d){ return d.key; });
+  regionUpdate.select("h2")
+    .html(function(d){ return d.value; })
 
   var ctpStartYears = d3.nest().key(function(d){ return d["startYear"]; })
     .rollup(function(leaves){ return leaves.length; })
@@ -207,6 +242,34 @@ function updateElements(myFilters){
 }
 
 function drawElements(){
+
+  var regionTotals = d3.nest().key(function(d){ return d["#region"]; })
+    .rollup(function(leaves){ return leaves.length; })
+    .entries(ctp);
+
+  var regionEnter = d3.select("#region-totals").selectAll("div").data(regionTotals, function(d){ return d.key; })
+    .enter().append("div")
+    .style("text-align", "center")
+    .style("border-bottom", "1px solid #f5f5f5")
+    .classed("filter-region clickable", true)
+    .attr('data-filterkey', '#region')
+    .attr('data-filtervalue', function(d){ return d.key; })
+      .on('click', function(d){
+        if(d3.select(this).classed('filter-active')){
+          d3.select(this).classed('filter-active', false);
+        } else {
+          d3.select(this).classed('filter-active', true);
+        }
+        filter();
+      })
+  regionEnter.append('h2')
+        .html(function(d){ return d.value; })
+        .style("color", function(d){ return regionColor(d.key); })
+  regionEnter.append('p')
+        .html(function(d){ return d.key; })
+
+  regionEnter.sort(function(a, b){ return d3.descending(a.value, b.value); });
+
 
   var ctpStartYears = d3.nest().key(function(d){ return d["startYear"]; })
     .rollup(function(leaves){ return leaves.length; })
@@ -258,17 +321,7 @@ function drawElements(){
 function buildPage(error, appeals, geo){
   ctp = appeals;
 
-  // var divYears = d3.select("#years").selectAll('div')
-  //   .data(d3.map(ctp, function(d){ return d["startYear"]; }).keys()).enter()
-  //   .append('div').text(function(d){ return d })
-  //   .classed('filter-startYear', true)
-  //   .attr('data-filterkey', 'startYear')
-  //   .attr('data-filtervalue', function(d){ return d; })
-  //   .sort(function(a, b){ return d3.ascending(a, b); })
-  //   .on('click', function(d,i){
-  //     $(this).toggleClass('filter-active')
-  //     filter();
-  //   })
+  d3.select("#count-total").html(appeals.length);
 
     world = topojson.feature(geo, geo.objects.ne_50m)
     mappedCountry = geoGroup.selectAll("path")
@@ -316,20 +369,6 @@ function buildPage(error, appeals, geo){
       .range(["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e"])
 
     drawElements();
-
-  // var regionTotals = d3.nest().key(function(d){ return d["#region"]; })
-  //   .rollup(function(leaves){ return leaves.length; })
-  //   .entries(ctp).sort(function(a, b){ return d3.descending(a.value, b.value); });
-  //
-  // var totalBox = d3.select("#region-totals").selectAll("div").data(regionTotals).enter()
-  //   .append('div')
-  //   .style("text-align", "center")
-  //   .style("border-bottom", "1px solid #f5f5f5")
-  // totalBox.append('h2')
-  //     .html(function(d){ return d.value; })
-  //     .style("color", function(d){ return regionColor(d.key); })
-  // totalBox.append('h4')
-  //     .html(function(d){ return d.key; })
 
 }
 

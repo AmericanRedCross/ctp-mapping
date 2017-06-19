@@ -2,6 +2,12 @@
   height: 500px;
   width: 100%;
 }
+#filter-info:empty {
+  display:none;
+}
+#filter-error:empty {
+  display:none;
+}
 #overview-map svg path {
   pointer-events: all;
 }
@@ -47,7 +53,11 @@
 .clickable {
   cursor: pointer;
 }
-
+.filter-region.filter-active p {
+  color: #08306b ;
+  font-weight: 900 ;
+  font-size: 16px ;
+}
 .filter-startYear rect {
   fill: #1d91c0;
 }
