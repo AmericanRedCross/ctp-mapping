@@ -163,14 +163,15 @@ function updateElements(myFilters){
 // DISPLAY THE FILTER CRITERIA
   var filterReadable = {
     "#iso3": "Country code",
-    "startYear": "Start year",
-    "#region": "Region"
+    "startYear": "Appeal start year",
+    "#region": "Region",
+    "#sector": "Response sector",
   }
   var theseFilters = []
   for(var prop in myFilters){
       var theseValues = [];
       myFilters[prop].forEach(function(item,index){
-        theseValues.push(item);
+        theseValues.push('"' + item + '"');
       });
       var thisStr = filterReadable[prop] + " is " + theseValues.join(" or ") + ".";
       theseFilters.push(thisStr);
@@ -227,7 +228,7 @@ function updateElements(myFilters){
     .transition().duration(1000).ease(d3.easeLinear)
     .attr("width", function(d) { return 0; })
   yearClear.select(".year-total")
-    .attr("x", function(d) { return 0; })
+    // .attr("x", function(d) { return 0; })
     .text(function(d) { return ""; });
 
   var yearUpdate = d3.select('#chart_start-year').selectAll("g").data(ctpStartYears, function(d){ return d.key; });
@@ -236,7 +237,28 @@ function updateElements(myFilters){
     .attr("width", function(d) { return startYearX(d.value); })
   yearUpdate.select(".year-total")
     .transition().duration(600).ease(d3.easeLinear)
-    .attr("x", function(d) { return startYearX(d.value) + 3; })
+    // .attr("x", function(d) { return startYearX(d.value) + 3; })
+    .text(function(d) { return d.value; });
+
+  var ctpSectors = d3.nest().key(function(d){ return d["#sector"]; })
+    .rollup(function(leaves){ return leaves.length; })
+    .entries(filteredData)
+
+  sectorsX.domain([0, d3.max(ctpSectors, function(d) { return d.value; })]);
+
+  var sectorClear = d3.select('#chart_sectors').selectAll("g")
+  sectorClear.select("rect")
+    .transition().duration(1000).ease(d3.easeLinear)
+    .attr("width", function(d) { return 0; })
+  sectorClear.select(".sectors-total")
+    .text(function(d) { return ""; });
+
+  var sectorUpdate = d3.select('#chart_sectors').selectAll("g").data(ctpSectors, function(d){ return d.key; });
+  sectorUpdate.select("rect")
+    .transition().duration(600).ease(d3.easeLinear)
+    .attr("width", function(d) { return sectorsX(d.value); })
+  sectorUpdate.select(".sectors-total")
+    .transition().duration(600).ease(d3.easeLinear)
     .text(function(d) { return d.value; });
 
 }
@@ -276,7 +298,7 @@ function drawElements(){
     .entries(ctp)
   //  ctpStartYearsTotal = d3.sum(ctpStartYears, function(d){ return d.value; });
 
-  startYearMeas = {top: 10, right: 20, bottom: 30, left: 60, barHeight:20, width: $("#chart_start-year").innerWidth()}
+  startYearMeas = {top: 10, right: 20, bottom: 30, left: 20, barHeight:20, width: $("#chart_start-year").innerWidth()}
   startYearSvg = d3.select("#chart_start-year").append('svg').attr('width', startYearMeas.width)
   startYearX = d3.scaleLinear().range([0, (startYearMeas.width - startYearMeas.left - startYearMeas.right)]);
 
@@ -290,7 +312,7 @@ function drawElements(){
         .attr("height", startYearMeas.barHeight - 1)
       d3.select(this).append("text")
         .attr("class","year-label")
-        .attr("x", -5)
+        .attr("x", 5)
         .attr("y", startYearMeas.barHeight / 2)
         .attr("dy", ".35em")
         .text(function(d) {
@@ -298,12 +320,56 @@ function drawElements(){
         });
       d3.select(this).append("text")
         .attr("class","year-total")
+        .attr("x", -5)
         .attr("y", startYearMeas.barHeight / 2)
         .attr("dy", ".35em")
     }).sort(function(a, b) { return b.key - a.key; })
     .classed("filter-startYear clickable", true)
     .attr("transform", function(d, i) { return "translate(" + startYearMeas.left + "," + ((i * startYearMeas.barHeight) + startYearMeas.top) + ")"; })
     .attr('data-filterkey', 'startYear')
+    .attr('data-filtervalue', function(d){ return d.key; })
+    .on('click', function(d){
+      if(d3.select(this).classed('filter-active')){
+        d3.select(this).classed('filter-active', false);
+      } else {
+        d3.select(this).classed('filter-active', true);
+      }
+      filter();
+    })
+
+
+  var ctpSectors = d3.nest().key(function(d){ return d["#sector"]; })
+      .rollup(function(leaves){ return leaves.length; })
+      .entries(ctp)
+
+  sectorsMeas = {top: 10, right: 20, bottom: 30, left: 20, barHeight:20, width: $("#chart_sectors").innerWidth()}
+  sectorsSvg = d3.select("#chart_sectors").append('svg').attr('width', sectorsMeas.width)
+  sectorsX = d3.scaleLinear().range([0, (sectorsMeas.width - sectorsMeas.left - sectorsMeas.right)]);
+
+  sectorsSvg.attr("height", (sectorsMeas.barHeight * ctpSectors.length) + sectorsMeas.top + sectorsMeas.bottom );
+
+  var sectorsEnter = sectorsSvg.selectAll("g").data(ctpSectors, function(d){ return d.key; });
+
+  sectorsEnter.enter().append("g").each(function(d){
+      d3.select(this).append('rect')
+        .attr("height", sectorsMeas.barHeight - 1)
+      d3.select(this).append("text")
+        .attr("class","sectors-label")
+        .attr("x", 3)
+        .attr("y", sectorsMeas.barHeight / 2)
+        .attr("dy", ".35em")
+        .text(function(d) {
+          return d.key;
+        });
+      d3.select(this).append("text")
+        .attr("class","sectors-total")
+        .attr("x", -5)
+        .attr("y", sectorsMeas.barHeight / 2)
+        .attr("dy", ".35em")
+    }).sort(function(a, b) { return b.key - a.key; })
+    .classed("filter-sectors clickable", true)
+    .attr("transform", function(d, i) { return "translate(" + sectorsMeas.left + "," + ((i * sectorsMeas.barHeight) + sectorsMeas.top) + ")"; })
+    .attr('data-filterkey', '#sector')
     .attr('data-filtervalue', function(d){ return d.key; })
     .on('click', function(d){
       if(d3.select(this).classed('filter-active')){

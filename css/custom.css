@@ -1,6 +1,7 @@
 #overview-map {
   height: 500px;
   width: 100%;
+  border: 1px solid rgb(245, 245, 245)
 }
 #filter-info:empty {
   display:none;
@@ -66,11 +67,11 @@
   font-family: inherit;
 }
 .filter-startYear text.year-label {
-  text-anchor: end;
+  text-anchor: start;
   fill: black;
 }
 .filter-startYear text.year-total {
-  text-anchor: start;
+  text-anchor: end;
   fill: black;
 }
 .filter-startYear.filter-active text.year-label{
@@ -78,5 +79,24 @@
   font-weight: 900 ;
   font-size: 14px ;
 }
-
+.filter-sectors rect {
+  fill: #1d91c0;
+}
+.filter-sectors text {
+  font-size: 11px;
+  font-family: inherit;
+}
+.filter-sectors text.sectors-label {
+  text-anchor: start;
+  fill: black;
+}
+.filter-sectors text.sectors-total {
+  text-anchor: end;
+  fill: black;
+}
+.filter-sectors.filter-active text.sectors-label{
+  fill: #08306b ;
+  font-weight: 900 ;
+  font-size: 14px ;
+}
 
