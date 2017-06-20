@@ -59,6 +59,7 @@
   font-weight: 900 ;
   font-size: 16px ;
 }
+
 .filter-startYear rect {
   fill: #1d91c0;
 }
@@ -79,6 +80,7 @@
   font-weight: 900 ;
   font-size: 14px ;
 }
+
 .filter-sectors rect {
   fill: #1d91c0;
 }
@@ -100,3 +102,44 @@
   font-size: 14px ;
 }
 
+.filter-deliveryMech rect {
+  fill: #1d91c0;
+}
+.filter-deliveryMech text {
+  font-size: 11px;
+  font-family: inherit;
+}
+.filter-deliveryMech text.deliveryMech-label {
+  text-anchor: start;
+  fill: black;
+}
+.filter-deliveryMech text.deliveryMech-total {
+  text-anchor: end;
+  fill: black;
+}
+.filter-deliveryMech.filter-active text.deliveryMech-label{
+  fill: #08306b ;
+  font-weight: 900 ;
+  font-size: 14px ;
+}
+
+.filter-modalities rect {
+  fill: #1d91c0;
+}
+.filter-modalities text {
+  font-size: 11px;
+  font-family: inherit;
+}
+.filter-modalities text.modalities-label {
+  text-anchor: start;
+  fill: black;
+}
+.filter-modalities text.modalities-total {
+  text-anchor: end;
+  fill: black;
+}
+.filter-modalities.filter-active text.modalities-label{
+  fill: #08306b ;
+  font-weight: 900 ;
+  font-size: 14px ;
+}

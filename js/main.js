@@ -11,6 +11,31 @@ function validDate(d){
   }
 }
 
+var disasterList = {
+  "Cholera":"_",
+  "Civil unrest":"_",
+  "Complex emergency":"_",
+  "Conflict":"_",
+  "Cyclone":"_",
+  "Drought":"_",
+  "Earthquake(s)":"_",
+  "Ebola":"_",
+  "Extreme Winter":"_",
+  "Fire(s)":"_",
+  "Flood(s)":"_",
+  "Food Insecurity":"_",
+  "Hail Storm(s)":"_",
+  "Hurricane":"_",
+  "Industrial Explosion":"_",
+  "Landslide(s)":"_",
+  "Population Movement":"_",
+  "Storm(s)":"_",
+  "Tornado(es)":"_",
+  "Tsunami":"_",
+  "Typhoon":"_",
+  "Volcano":"_"
+}
+
 function hxlProxyToJSON(input,headers){
     var output = [];
     var keys=[]
@@ -166,6 +191,8 @@ function updateElements(myFilters){
     "startYear": "Appeal start year",
     "#region": "Region",
     "#sector": "Response sector",
+    "#modality+type": "Modality type",
+    "#delivery+mechanism": "Delivery mechanism"
   }
   var theseFilters = []
   for(var prop in myFilters){
@@ -207,6 +234,8 @@ function updateElements(myFilters){
     })
   })
 
+  // #region
+  // =======
   var regionTotals = d3.nest().key(function(d){ return d["#region"]; })
     .rollup(function(leaves){ return leaves.length; })
     .entries(filteredData);
@@ -217,6 +246,8 @@ function updateElements(myFilters){
   regionUpdate.select("h2")
     .html(function(d){ return d.value; })
 
+  // startYear
+  // =========
   var ctpStartYears = d3.nest().key(function(d){ return d["startYear"]; })
     .rollup(function(leaves){ return leaves.length; })
     .entries(filteredData)
@@ -228,7 +259,6 @@ function updateElements(myFilters){
     .transition().duration(1000).ease(d3.easeLinear)
     .attr("width", function(d) { return 0; })
   yearClear.select(".year-total")
-    // .attr("x", function(d) { return 0; })
     .text(function(d) { return ""; });
 
   var yearUpdate = d3.select('#chart_start-year').selectAll("g").data(ctpStartYears, function(d){ return d.key; });
@@ -237,9 +267,10 @@ function updateElements(myFilters){
     .attr("width", function(d) { return startYearX(d.value); })
   yearUpdate.select(".year-total")
     .transition().duration(600).ease(d3.easeLinear)
-    // .attr("x", function(d) { return startYearX(d.value) + 3; })
     .text(function(d) { return d.value; });
 
+  // #sector
+  // =======
   var ctpSectors = d3.nest().key(function(d){ return d["#sector"]; })
     .rollup(function(leaves){ return leaves.length; })
     .entries(filteredData)
@@ -261,10 +292,61 @@ function updateElements(myFilters){
     .transition().duration(600).ease(d3.easeLinear)
     .text(function(d) { return d.value; });
 
+  // #delivery+mechanism
+  // ===================
+  deliveryMech  = d3.nest().key(function(d){ return d["#delivery+mechanism"]; })
+    .rollup(function(leaves){ return leaves.length; })
+    .entries(filteredData)
+
+  deliveryMechX.domain([0, d3.max(deliveryMech, function(d) { return d.value; })]);
+
+  var deliveryMechClear = d3.select('#chart_delivery-mech').selectAll("g")
+  deliveryMechClear.select("rect")
+    .transition().duration(1000).ease(d3.easeLinear)
+    .attr("width", function(d) { return 0; })
+  deliveryMechClear.select(".deliveryMech-total")
+    .text(function(d) { return ""; });
+
+  var deliveryMechUpdate = d3.select('#chart_delivery-mech').selectAll("g").data(deliveryMech, function(d){ return d.key; });
+  deliveryMechUpdate.select("rect")
+    .transition().duration(600).ease(d3.easeLinear)
+    .attr("width", function(d) { return deliveryMechX(d.value); })
+  deliveryMechUpdate.select(".deliveryMech-total")
+    .transition().duration(600).ease(d3.easeLinear)
+    .text(function(d) { return d.value; });
+
+  // #modality+type
+  // ==============
+  var modalities  = d3.nest().key(function(d){ return d["#modality+type"]; })
+    .rollup(function(leaves){ return leaves.length; })
+    .entries(filteredData)
+
+  modalitiesX.domain([0, d3.max(modalities, function(d) { return d.value; })]);
+
+  var modalitiesClear = d3.select('#chart_modality').selectAll("g")
+  modalitiesClear.select("rect")
+    .transition().duration(1000).ease(d3.easeLinear)
+    .attr("width", function(d) { return 0; })
+  modalitiesClear.select(".modalities-total")
+    .text(function(d) { return ""; });
+
+  var modalitiesUpdate = d3.select('#chart_modality').selectAll("g").data(modalities, function(d){ return d.key; });
+  modalitiesUpdate.select("rect")
+    .transition().duration(600).ease(d3.easeLinear)
+    .attr("width", function(d) { return modalitiesX(d.value); })
+  modalitiesUpdate.select(".modalities-total")
+    .transition().duration(600).ease(d3.easeLinear)
+    .text(function(d) { return d.value; });
+
+
 }
+
+
 
 function drawElements(){
 
+  // #region
+  // =======
   var regionTotals = d3.nest().key(function(d){ return d["#region"]; })
     .rollup(function(leaves){ return leaves.length; })
     .entries(ctp);
@@ -293,15 +375,15 @@ function drawElements(){
   regionEnter.sort(function(a, b){ return d3.descending(a.value, b.value); });
 
 
+  // startYear
+  // =========
   var ctpStartYears = d3.nest().key(function(d){ return d["startYear"]; })
     .rollup(function(leaves){ return leaves.length; })
     .entries(ctp)
-  //  ctpStartYearsTotal = d3.sum(ctpStartYears, function(d){ return d.value; });
 
-  startYearMeas = {top: 10, right: 20, bottom: 30, left: 20, barHeight:20, width: $("#chart_start-year").innerWidth()}
+  startYearMeas = {top: 10, right: 20, bottom: 30, left: 25, barHeight:20, width: $("#chart_start-year").innerWidth()}
   startYearSvg = d3.select("#chart_start-year").append('svg').attr('width', startYearMeas.width)
   startYearX = d3.scaleLinear().range([0, (startYearMeas.width - startYearMeas.left - startYearMeas.right)]);
-
 
   startYearSvg.attr("height", (startYearMeas.barHeight * ctpStartYears.length) + startYearMeas.top + startYearMeas.bottom );
 
@@ -337,12 +419,13 @@ function drawElements(){
       filter();
     })
 
-
+  // #sector
+  // =======
   var ctpSectors = d3.nest().key(function(d){ return d["#sector"]; })
       .rollup(function(leaves){ return leaves.length; })
       .entries(ctp)
 
-  sectorsMeas = {top: 10, right: 20, bottom: 30, left: 20, barHeight:20, width: $("#chart_sectors").innerWidth()}
+  sectorsMeas = {top: 10, right: 20, bottom: 30, left: 25, barHeight:20, width: $("#chart_sectors").innerWidth()}
   sectorsSvg = d3.select("#chart_sectors").append('svg').attr('width', sectorsMeas.width)
   sectorsX = d3.scaleLinear().range([0, (sectorsMeas.width - sectorsMeas.left - sectorsMeas.right)]);
 
@@ -379,6 +462,95 @@ function drawElements(){
       }
       filter();
     })
+
+    // #delivery+mechanism
+    // ===================
+    var deliveryMech = d3.nest().key(function(d){ return d["#delivery+mechanism"]; })
+        .rollup(function(leaves){ return leaves.length; })
+        .entries(ctp)
+
+    deliveryMechMeas = {top: 10, right: 20, bottom: 30, left: 25, barHeight:20, width: $("#chart_delivery-mech").innerWidth()}
+    deliveryMechSvg = d3.select("#chart_delivery-mech").append('svg').attr('width', deliveryMechMeas.width)
+    deliveryMechX = d3.scaleLinear().range([0, (deliveryMechMeas.width - deliveryMechMeas.left - deliveryMechMeas.right)]);
+
+    deliveryMechSvg.attr("height", (deliveryMechMeas.barHeight * deliveryMech.length) + deliveryMechMeas.top + deliveryMechMeas.bottom );
+
+    var deliveryMechEnter = deliveryMechSvg.selectAll("g").data(deliveryMech, function(d){ return d.key; });
+
+    deliveryMechEnter.enter().append("g").each(function(d){
+        d3.select(this).append('rect')
+          .attr("height", deliveryMechMeas.barHeight - 1)
+        d3.select(this).append("text")
+          .attr("class","deliveryMech-label")
+          .attr("x", 3)
+          .attr("y", deliveryMechMeas.barHeight / 2)
+          .attr("dy", ".35em")
+          .text(function(d) {
+            return d.key;
+          });
+        d3.select(this).append("text")
+          .attr("class","deliveryMech-total")
+          .attr("x", -5)
+          .attr("y", deliveryMechMeas.barHeight / 2)
+          .attr("dy", ".35em")
+      }).sort(function(a, b) { return b.key - a.key; })
+      .classed("filter-deliveryMech clickable", true)
+      .attr("transform", function(d, i) { return "translate(" + deliveryMechMeas.left + "," + ((i * deliveryMechMeas.barHeight) + deliveryMechMeas.top) + ")"; })
+      .attr('data-filterkey', '#delivery+mechanism')
+      .attr('data-filtervalue', function(d){ return d.key; })
+      .on('click', function(d){
+        if(d3.select(this).classed('filter-active')){
+          d3.select(this).classed('filter-active', false);
+        } else {
+          d3.select(this).classed('filter-active', true);
+        }
+        filter();
+      })
+
+      // #modality+type
+      // ==============
+      var modalities = d3.nest().key(function(d){ return d["#modality+type"]; })
+          .rollup(function(leaves){ return leaves.length; })
+          .entries(ctp)
+
+      modalitiesMeas = {top: 10, right: 20, bottom: 30, left: 25, barHeight:20, width: $("#chart_modality").innerWidth()}
+      modalitiesSvg = d3.select("#chart_modality").append('svg').attr('width', modalitiesMeas.width)
+      modalitiesX = d3.scaleLinear().range([0, (modalitiesMeas.width - modalitiesMeas.left - modalitiesMeas.right)]);
+
+      modalitiesSvg.attr("height", (modalitiesMeas.barHeight * modalities.length) + modalitiesMeas.top + modalitiesMeas.bottom );
+
+      var modalitiesEnter = modalitiesSvg.selectAll("g").data(modalities, function(d){ return d.key; });
+
+      modalitiesEnter.enter().append("g").each(function(d){
+          d3.select(this).append('rect')
+            .attr("height", modalitiesMeas.barHeight - 1)
+          d3.select(this).append("text")
+            .attr("class","modalities-label")
+            .attr("x", 3)
+            .attr("y", modalitiesMeas.barHeight / 2)
+            .attr("dy", ".35em")
+            .text(function(d) {
+              return d.key;
+            });
+          d3.select(this).append("text")
+            .attr("class","modalities-total")
+            .attr("x", -5)
+            .attr("y", modalitiesMeas.barHeight / 2)
+            .attr("dy", ".35em")
+        }).sort(function(a, b) { return b.key - a.key; })
+        .classed("filter-modalities clickable", true)
+        .attr("transform", function(d, i) { return "translate(" + modalitiesMeas.left + "," + ((i * modalitiesMeas.barHeight) + modalitiesMeas.top) + ")"; })
+        .attr('data-filterkey', '#modality+type')
+        .attr('data-filtervalue', function(d){ return d.key; })
+        .on('click', function(d){
+          if(d3.select(this).classed('filter-active')){
+            d3.select(this).classed('filter-active', false);
+          } else {
+            d3.select(this).classed('filter-active', true);
+          }
+          filter();
+        })
+
 
     filter();
 }
