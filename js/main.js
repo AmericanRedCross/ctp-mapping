@@ -12,28 +12,28 @@ function validDate(d){
 }
 
 var disasterList = {
-  "Cholera":"_",
-  "Civil unrest":"_",
-  "Complex emergency":"_",
-  "Conflict":"_",
-  "Cyclone":"_",
-  "Drought":"_",
-  "Earthquake(s)":"_",
-  "Ebola":"_",
-  "Extreme Winter":"_",
-  "Fire(s)":"_",
-  "Flood(s)":"_",
-  "Food Insecurity":"_",
-  "Hail Storm(s)":"_",
-  "Hurricane":"_",
-  "Industrial Explosion":"_",
-  "Landslide(s)":"_",
-  "Population Movement":"_",
-  "Storm(s)":"_",
-  "Tornado(es)":"_",
-  "Tsunami":"_",
-  "Typhoon":"_",
-  "Volcano":"_"
+  "Cholera":"icon-disaster_epidemic",
+  "Civil unrest":"icon-crisis_conflict",
+  "Complex emergency":"icon-crisis_conflict",
+  "Conflict":"icon-crisis_conflict",
+  "Cyclone":"icon-disaster_cyclone",
+  "Drought":"icon-disaster_drought",
+  "Earthquake(s)":"icon-disaster_earthquake",
+  "Ebola":"icon-disaster_epidemic",
+  "Extreme Winter":"icon-disaster_snowfall",
+  "Fire(s)":"icon-disaster_fire",
+  "Flood(s)":"icon-disaster_flood",
+  "Food Insecurity":"icon-disaster_drought",
+  "Hail Storm(s)":"icon-disaster_storm",
+  "Hurricane":"icon-disaster_cyclone",
+  "Industrial Explosion":"icon-disaster_technological",
+  "Landslide(s)":"icon-disaster_landslide",
+  "Population Movement":"icon-crisis_population_displacement",
+  "Storm(s)":"icon-disaster_storm",
+  "Tornado(es)":"icon-disaster_tornado",
+  "Tsunami":"icon-disaster_tsunami",
+  "Typhoon":"icon-disaster_cyclone",
+  "Volcano":"icon-disaster_volcano"
 }
 
 function hxlProxyToJSON(input,headers){
@@ -149,6 +149,13 @@ d3.queue()
 //
 // }
 
+function clearFilters(){
+  d3.selectAll('.filter-active').each(function(d){
+    d3.select(this).classed('filter-active', false);
+  })
+  filter()
+}
+
 function filter(){
   var myFilters = {};
   d3.selectAll('.filter-active').each(function(d){
@@ -204,10 +211,15 @@ function updateElements(myFilters){
       theseFilters.push(thisStr);
   }
   if(theseFilters.length > 0 && filteredData.length > 0){
-    d3.select("#filter-info").html("<b>Filters:</b> " + theseFilters.join(" "));
+    var displayHtml = "<b>Filters:</b> " + theseFilters.join(" ") +
+      '<div class="clickable" onClick="clearFilters();"><i class="fa fa-fw fa-times-circle"></i> Clear all filters</div>';
+    d3.select("#filter-info").html(displayHtml);
     d3.select("#filter-error").html("");
   } else if (theseFilters.length > 0 && filteredData.length === 0){
-    d3.select("#filter-error").html("No appeals match your selected filter criteria.<br>" + "<b>Filters:</b> " + theseFilters.join(" "));
+    var displayHtml = '<i class="fa fa-fw fa-exclamation-circle"></i> No appeals match your selected filter criteria.<br>' +
+      "<b>Filters:</b> " + theseFilters.join(" ") +
+      '<div class="clickable" onClick="clearFilters();"><i class="fa fa-fw fa-times-circle"></i> Clear all filters</div>';
+    d3.select("#filter-error").html(displayHtml);
     d3.select("#filter-info").html("");
   } else {
     d3.select("#filter-error").html("");
