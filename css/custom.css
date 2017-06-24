@@ -46,6 +46,33 @@
 #tooltip:empty {
     display:none;
 }
+#nodata {
+  display: none;
+  text-align: center;
+  font-size: 18px;
+  margin: 50px;
+}
+
+table.dataTable thead .sorting_asc { background-image: url("../img/sort_asc.png"); }
+table.dataTable thead .sorting_desc { background-image: url("../img/sort_desc.png"); }
+.dataTables_wrapper .dataTables_paginate .paginate_button { border: none; }
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover { background: #eee; }
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover { background: #c0c0c0; }
+
+.noUi-connect {
+  background: rgba(0,188,212,0.5);
+}
+.noUi-handle {
+  display: none;
+}
+.noUi-horizontal {
+  height: 12px;
+  margin: 6px 0px;
+}
+.noUi-target, .noUi-connect {
+  box-shadow: none;
+}
+
 .bar-graph-div {
    border:1px solid black;
    display:inline-block;

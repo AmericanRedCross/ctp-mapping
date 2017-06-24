@@ -11,6 +11,22 @@ function validDate(d){
   }
 }
 
+function sizeSlider(){
+  var view = $(".dataTables_scrollBody").width(); // screen window width
+  var full = $("#dataTable").width(); // full width
+  // hide slider if there is no overflow
+  if(view >= full){ $(slider).hide(); } else { $(slider).show(); }
+  var viewMin = $(".dataTables_scrollBody").scrollLeft();
+  var viewMax = viewMin + view;
+  slider.noUiSlider.updateOptions({
+    start: [viewMin, viewMax],
+    range: {
+      'min': 0,
+      'max': full
+    }
+  });
+}
+
 var disasterList = {
   "Cholera":"icon-disaster_epidemic",
   "Civil unrest":"icon-crisis_conflict",
@@ -36,49 +52,21 @@ var disasterList = {
   "Volcano":"icon-disaster_volcano"
 }
 
-function hxlProxyToJSON(input,headers){
-    var output = [];
-    var keys=[]
-    input.forEach(function(e,i){
-        if(i==0){
-            e.forEach(function(e2,i2){
-                var parts = e2.split('+');
-                var key = parts[0]
-                if(parts.length>1){
-                    var atts = parts.splice(1,parts.length);
-                    atts.sort();
-                    atts.forEach(function(att){
-                        key +='+'+att
-                    });
-                }
-                keys.push(key);
-            });
-        } else {
-            var row = {};
-            e.forEach(function(e2,i2){
-                row[keys[i2]] = e2;
-            });
-            output.push(row);
-        }
-    });
-    // clean and format data as needed
-    output.forEach(function(appeal){
-      var startDate = new Date(appeal["#date+appeal+start"]);
-      if(validDate(startDate)){
-        appeal.startYear = startDate.getFullYear().toString();
-      } else {
-        appeal.startYear = "undefined";
-      }
-    });
-
-    return output;
-}
-
-function fetchCtp(callback){
-  var cashUrl = "https://proxy.hxlstandard.org/data.json?strip-headers=on&url=https%3A//docs.google.com/spreadsheets/d/1DL6wRqVwB-x-T8tkH4Qb409yB2u9UBOV3Hjsn-v3kKI/edit%3Fusp%3Ddrive_web"
-  $.get(cashUrl, function(response){
-    callback(null, hxlProxyToJSON(response));
-  });
+function fetchCtp(cb){
+  Tabletop.init( { key: 'https://docs.google.com/spreadsheets/d/1DL6wRqVwB-x-T8tkH4Qb409yB2u9UBOV3Hjsn-v3kKI/pubhtml',
+       callback: function(data, tabletop) {
+         columnlookup = data.shift();
+         data.forEach(function(appeal){
+            var startDate = new Date(appeal["#date+appeal+start"]);
+            if(validDate(startDate)){
+              appeal["#date+appeal+start"] = startDate.getFullYear().toString();
+            } else {
+              appeal["#date+appeal+start"] = "undefined";
+            }
+          });
+          cb(null, data);
+       },
+       simpleSheet: true } )
 }
 
 var map = L.map('overview-map').setView([0, 0], 2);
@@ -195,7 +183,7 @@ function updateElements(myFilters){
 // DISPLAY THE FILTER CRITERIA
   var filterReadable = {
     "#iso3": "Country code",
-    "startYear": "Appeal start year",
+    "#date+appeal+start": "Appeal start year",
     "#region": "Region",
     "#sector": "Response sector",
     "#modality+type": "Modality type",
@@ -260,7 +248,7 @@ function updateElements(myFilters){
 
   // startYear
   // =========
-  var ctpStartYears = d3.nest().key(function(d){ return d["startYear"]; })
+  var ctpStartYears = d3.nest().key(function(d){ return d["#date+appeal+start"]; })
     .rollup(function(leaves){ return leaves.length; })
     .entries(filteredData)
 
@@ -351,6 +339,120 @@ function updateElements(myFilters){
     .text(function(d) { return d.value; });
 
 
+
+  // TABLE
+  // =====
+
+  var includedColumns = ["#region", "#crisis+code", "#country", "#iso3", "#crisis+type", "#sector", "#modality+type", "#budget+ctp", "#delivery+mechanism", "#reached", "#planned" ]
+
+  $("#table-div").empty();
+  if(filteredData.length === 0) {
+    // $("#loading").hide();
+    $("#nodata").show();
+    return false;
+  }
+  // render headers
+  $("#table-div").html('<table data-sortable id="dataTable" class="compact nowrap stripe cell-border" cellspacing="0"><thead><tr></tr></thead><tbody></tbody></table>');
+
+  for (var i = 0; i < includedColumns.length; i++) {
+    // if(field !== "rowid"){
+      $("#dataTable thead tr").append('<th>' + includedColumns[i] + ' <br><input class="column-search" type="search" placeholder="search..." /></th>');
+    // }
+  }
+  // render body of table
+  var tbody = $("#dataTable tbody")[0];
+  for (var i = 0; i < filteredData.length; i++) {
+      var tr = document.createElement("tr");
+      // for (field in filteredData[i]) {
+      for (var j = 0; j < includedColumns.length; j++) {
+          var td = document.createElement("td");
+          var field = includedColumns[j];
+          var cell = filteredData[i][field];
+          $(td)
+              .html(cell)
+              .attr("title", filteredData[i][field]);
+          tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+  }
+  // initialize dataTable
+  table = $('#dataTable').DataTable({
+    scrollX: true,
+    "sDom":'lrtip',
+    "lengthChange": false,
+    "pageLength": 10,
+    // "lengthMenu": [ 10, 50, 100 ],
+    "language": {
+      "lengthMenu": "Display _MENU_ records",
+      "info": "Showing _START_ to _END_ of _TOTAL_ records",
+    }
+    // first column is the edit button, so disable sort
+    // "columnDefs": [
+    //   { "orderable": false, "targets": 0 }
+    // ]
+  });
+
+  // stop a click in the search input box from triggering a sort on the column
+  $('.column-search').on('click', function(e){
+    e.stopPropagation();
+  });
+
+  // initialize column search functionality
+  table.columns().every( function() {
+    var that = this;
+    $('input', this.header() ).on('keyup change', function(){
+      if( that.search() !== this.value ){
+        that
+        .search( this.value )
+        .draw();
+      }
+    });
+  });
+
+  // if too few columns the body columns center while the header rows stay left
+  // if that's the case, shrink the table wrapper
+  if($('#table-div thead').width() < $("#table-div").width()){
+    $("#table-div").width($('#table-div thead').width())
+  }
+
+  // need a custom scroll bar that is always visible
+  // so user can x-scroll the table even if they only have a mouse (i.e. no touchpad)
+  $("<div id='myslider'></div>").insertAfter(".dataTables_scroll")
+  slider = document.getElementById('myslider');
+  noUiSlider.create(slider, {
+  	start: [null, null],
+  	connect: true,
+    behaviour: "drag-fixed",
+  	range: {
+  		'min': 0,
+  		'max': 1
+  	}
+  });
+
+
+  sizeSlider();
+
+  // update the slider position when the div is scrolled via direct interaction
+  var divScroll = function(){
+    var viewMin = $(".dataTables_scrollBody").scrollLeft();
+    var view = $(".dataTables_scrollBody").width(); // visible width
+    var viewMax = viewMin + view;
+    slider.noUiSlider.set([viewMin, viewMax]);
+  }
+  $(".dataTables_scrollBody").on('scroll', divScroll);
+  // update the table view when the slider is dragged
+  slider.noUiSlider.on('slide', function(values, handle, unencoded){
+    $(".dataTables_scrollBody").off('scroll', divScroll) // turn off the direct interaction scroll listener to keep things smooth
+    $(".dataTables_scrollBody").scrollLeft(Math.round(unencoded[0])) // move the view based on the new slider position
+    $(".dataTables_scrollBody").css("overflow-x", "hidden") // prevent the browser scrollbar from showing
+  });
+  slider.noUiSlider.on('end', function(){
+    $(".dataTables_scrollBody").on('scroll', divScroll); // after done dragging the slider turn back on the direct interaction scroll listener
+    $(".dataTables_scrollBody").css("overflow-x", "auto"); // turn back on the browser scroll styling
+  })
+
+
+
 }
 
 
@@ -389,7 +491,7 @@ function drawElements(){
 
   // startYear
   // =========
-  var ctpStartYears = d3.nest().key(function(d){ return d["startYear"]; })
+  var ctpStartYears = d3.nest().key(function(d){ return d["#date+appeal+start"]; })
     .rollup(function(leaves){ return leaves.length; })
     .entries(ctp)
 
@@ -420,7 +522,7 @@ function drawElements(){
     }).sort(function(a, b) { return b.key - a.key; })
     .classed("filter-startYear clickable", true)
     .attr("transform", function(d, i) { return "translate(" + startYearMeas.left + "," + ((i * startYearMeas.barHeight) + startYearMeas.top) + ")"; })
-    .attr('data-filterkey', 'startYear')
+    .attr('data-filterkey', '#date+appeal+start')
     .attr('data-filtervalue', function(d){ return d.key; })
     .on('click', function(d){
       if(d3.select(this).classed('filter-active')){
